@@ -60,7 +60,7 @@ const int IdBall = 2;
 
 const float PI = 3.1415926535;
 
-#define TIME (iTime + Scene)
+#define TIME (iTime)
 #define ZERO (min(iFrame, 0))
 
 //======================================================
@@ -601,26 +601,28 @@ vec3 GetColor(in vec2 uv) {
   return color;
 }
 
-//#define AA
+#define AA
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+  vec2 uv = (2.0 * (fragCoord)-iResolution.xy) / iResolution.y;
   vec3 color = vec3(0.0);
 
 #ifdef AA
-  color +=
-      GetColor((2.0 * (fragCoord + vec2(0, 0) / 2.0 - 0.5) - iResolution.xy) /
-               iResolution.y);
-  color +=
-      GetColor((2.0 * (fragCoord + vec2(1, 0) / 2.0 - 0.5) - iResolution.xy) /
-               iResolution.y);
-  color +=
-      GetColor((2.0 * (fragCoord + vec2(0, 1) / 2.0 - 0.5) - iResolution.xy) /
-               iResolution.y);
-  color +=
-      GetColor((2.0 * (fragCoord + vec2(1, 1) / 2.0 - 0.5) - iResolution.xy) /
-               iResolution.y);
+  float spread = 1.0;
+  color += GetColor(
+      (2.0 * (fragCoord + (vec2(0, 0) / 2.0 - 0.5) * spread) - iResolution.xy) /
+      iResolution.y);
+  color += GetColor(
+      (2.0 * (fragCoord + (vec2(1, 0) / 2.0 - 0.5) * spread) - iResolution.xy) /
+      iResolution.y);
+  color += GetColor(
+      (2.0 * (fragCoord + (vec2(0, 1) / 2.0 - 0.5) * spread) - iResolution.xy) /
+      iResolution.y);
+  color += GetColor(
+      (2.0 * (fragCoord + (vec2(1, 1) / 2.0 - 0.5) * spread) - iResolution.xy) /
+      iResolution.y);
   color /= 4.0;
 #else
-  color += GetColor((2.0 * (fragCoord)-iResolution.xy) / iResolution.y);
+  color += GetColor(uv);
 #endif
 
   float ditherValue =
