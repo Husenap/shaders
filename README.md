@@ -5,6 +5,6 @@ I use my tool [takoyaki](https://github.com/Husenap/takoyaki) when developing th
 
 ## Shadertoy
 
-[My Shadertoy profile](https://www.shadertoy.com/profile/?show=shaders)
+[My Shadertoy profile](https://www.shadertoy.com/user/dubu)
 
 My shaders are fully compatible and can be copy-pasted into shadertoy.
