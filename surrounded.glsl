@@ -12,28 +12,28 @@ const float FocalLength = 0.170;
 const float CameraHeight = 24.813;
 const float CameraDistance = 17.236;
 const float WallThickness = 0.1;
-const float WallCutout = 1.5;
+const float WallCutout = 3.1;
 const float BallSize = 0.75;
-const vec4 GroundAlbedo = vec4(0.292, 0.892, 0.768, 1.000);
-const vec4 GroundAlbedo2 = vec4(0.627, 0.219, 1.000, 1.000);
+const vec4 GroundAlbedo = vec4(0.823, 1.0, 0.918, 1.000);
+const vec4 GroundAlbedo2 = vec4(0.960, 0.838, 1.000, 1.000);
 const vec4 WallAlbedo = vec4(1.0, 1.0, 1.0, 1.0);
 const vec4 BallAlbedo = vec4(0.962, 0.962, 0.962, 1.0);
 
-const vec3 LightPositionLeft = vec3(-92.3, 66.2, -24.2);
-const vec3 LightPositionRight = vec3(70.5, 68.4, -14.0);
+const vec3 LightPositionLeft = vec3(-107.9, 99.9, 30.2);
+const vec3 LightPositionRight = vec3(108.3, 94.8, 30.5);
 const vec3 LightPositionBack = vec3(0.0, 152.5, 496.7);
 
-const vec4 LightColorLeft = vec4(0.627, 0.219, 1.000, 0.000);
-const vec4 LightColorRight = vec4(0.330, 0.208, 1.000, 1.306);
-const vec4 LightColorBack = vec4(0.622, 0.523, 1.000, 0.341);
+const vec4 LightColorLeft = vec4(0.150, 0.466, 0.977, 1.589);
+const vec4 LightColorRight = vec4(0.330, 0.208, 1.000, 1.534);
+const vec4 LightColorBack = vec4(0.622, 0.523, 1.000, 0.561);
 
 const vec2 LightDistanceDecayLeft = vec2(427.2, 1.0);
 const vec2 LightDistanceDecayRight = vec2(392.7, 1.0);
 const vec2 LightDistanceDecayBack = vec2(2934.0, 1.0);
 
-const vec4 AmbientLight = vec4(0.233, 0.090, 0.900, 0.663);
+const vec4 AmbientLight = vec4(0.233, 0.090, 0.900, 0.808);
 
-const float ShadowBias = 0.4;
+const float ShadowBias = 0.04;
 #endif
 
 //======================================================
@@ -183,8 +183,8 @@ float PunctualLightIntensityToIrradianceFactor(const in float lightDistance,
 void GetPointDirectLightIrradiance(const in PointLight pointLight,
                                    const in vec3 geometryPosition,
                                    out IncidentLight directLight) {
-  const vec3 L = pointLight.position - geometryPosition;
-  const float lightDistance = length(L);
+  vec3 L = pointLight.position - geometryPosition;
+  float lightDistance = length(L);
 
   directLight.direction = L / lightDistance;
   if (TestLightInRange(lightDistance, pointLight.visibleDistance)) {
@@ -211,52 +211,52 @@ vec3 F_Schlick(const in vec3 specularColor, const in vec3 V, const in vec3 H) {
          (1.0 - specularColor) * pow(1.0 - saturate(dot(V, H)), 5.0);
 }
 float D_GGX(const in float a, const in float dotNH) {
-  const float a2 = a * a;
-  const float dotNH2 = dotNH * dotNH;
-  const float d = dotNH2 * (a2 - 1.0) + 1.0;
+  float a2 = a * a;
+  float dotNH2 = dotNH * dotNH;
+  float d = dotNH2 * (a2 - 1.0) + 1.0;
   return a2 / (PI * d * d);
 }
 float G_SmithSchlickGGX(const in float a, const in float dotNV,
                         const in float dotNL) {
-  const float k = a * a * 0.5 + Epsilon;
-  const float gl = dotNL / (dotNL * (1.0 - k) + k);
-  const float gv = dotNV / (dotNV * (1.0 - k) + k);
+  float k = a * a * 0.5 + Epsilon;
+  float gl = dotNL / (dotNL * (1.0 - k) + k);
+  float gv = dotNV / (dotNV * (1.0 - k) + k);
   return gl * gv;
 }
 vec3 SpecularBRDF(const in IncidentLight directLight,
                   const in GeometricContext geometry,
                   const in vec3 specularColor, const in float roughnessFactor) {
-  const vec3 N = geometry.normal;
-  const vec3 V = geometry.viewDir;
-  const vec3 L = directLight.direction;
-  const vec3 H = normalize(L + V);
+  vec3 N = geometry.normal;
+  vec3 V = geometry.viewDir;
+  vec3 L = directLight.direction;
+  vec3 H = normalize(L + V);
 
-  const float dotNL = saturate(dot(N, L));
-  const float dotNV = saturate(dot(N, V));
-  const float dotNH = saturate(dot(N, H));
-  const float dotVH = saturate(dot(V, H));
-  const float dotLV = saturate(dot(L, V));
+  float dotNL = saturate(dot(N, L));
+  float dotNV = saturate(dot(N, V));
+  float dotNH = saturate(dot(N, H));
+  float dotVH = saturate(dot(V, H));
+  float dotLV = saturate(dot(L, V));
 
-  const float a = roughnessFactor * roughnessFactor;
+  float a = roughnessFactor * roughnessFactor;
 
-  const vec3 F = F_Schlick(specularColor, V, H);
-  const float D = D_GGX(a, dotNH);
-  const float G = G_SmithSchlickGGX(a, dotNV, dotNL);
+  vec3 F = F_Schlick(specularColor, V, H);
+  float D = D_GGX(a, dotNH);
+  float G = G_SmithSchlickGGX(a, dotNV, dotNL);
 
   return (F * G * D) / (4.0 * dotNL * dotNV + Epsilon);
 }
 void RE_Direct(const in IncidentLight directLight,
                const in GeometricContext geometry, const in Material material,
                out ReflectedLight reflectedLight) {
-  const float dotNL = saturate(dot(geometry.normal, directLight.direction));
-  const vec3 irradiance = dotNL * directLight.color * PI;
+  float dotNL = saturate(dot(geometry.normal, directLight.direction));
+  vec3 irradiance = dotNL * directLight.color * PI;
 
-  const vec3 diffuse = DiffuseColor(material.albedo, material.metallic);
-  const vec3 specular = SpecularColor(material.albedo, material.metallic);
+  vec3 diffuse = DiffuseColor(material.albedo, material.metallic);
+  vec3 specular = SpecularColor(material.albedo, material.metallic);
 
   reflectedLight.directDiffuse += irradiance * DiffuseBRDF(diffuse);
 
-  const float roughness = map(material.roughness, 0.0, 1.0, 0.025, 1.0);
+  float roughness = map(material.roughness, 0.0, 1.0, 0.025, 1.0);
   reflectedLight.directSpecular +=
       irradiance * SpecularBRDF(directLight, geometry, specular, roughness);
 }
@@ -276,10 +276,10 @@ vec3 LinearToRec709(in vec3 linear) {
               LinearToRec709(linear.b));
 }
 float Rec709ToLinear(float rec709) {
-  const float Denom1 = 1.0 / 4.5;
-  const float Denom2 = 1.0 / 1.099;
-  const float Num2 = 0.099 * Denom2;
-  const float Exponent2 = 1.0 / 0.45;
+  float Denom1 = 1.0 / 4.5;
+  float Denom2 = 1.0 / 1.099;
+  float Num2 = 0.099 * Denom2;
+  float Exponent2 = 1.0 / 0.45;
 
   if (rec709 < 0.081) {
     return rec709 * Denom1;
@@ -335,7 +335,7 @@ Hit OpUnionHit(in Hit a, in Hit b) {
 
 Hit Ground(in vec3 p) { return Hit(p.y, IdGround, p); }
 Hit Ball(in vec3 p) {
-  const vec3 q = p - vec3(0.0, BallSize, 0.0);
+  vec3 q = p - vec3(0.0, BallSize, 0.0);
 
   float d = FSphere(q, BallSize);
 
@@ -349,12 +349,12 @@ Hit Ball(in vec3 p) {
   return Hit(d, IdBall, q);
 }
 Hit Wall(in vec3 p) {
-  const vec3 q = p - vec3(0.0, BallSize, 0.0);
+  vec3 q = p - vec3(0.0, BallSize, 0.0);
 
   float d = RayMarchingMaxDistance;
   for (float radius = 3.0; radius < 12.0; radius += 2.0) {
-    const float inner = FCylinder(q, radius - WallThickness, BallSize * 2.0);
-    const float outer = FCylinder(q, radius, BallSize);
+    float inner = FCylinder(q, radius - WallThickness, BallSize * 2.0);
+    float outer = FCylinder(q, radius, BallSize);
 
     float cutoutBox = RayMarchingMaxDistance;
     for (float a = 0.0; a < 3.0; ++a) {
@@ -575,9 +575,8 @@ vec3 GetColor(in vec2 uv) {
     }
   }
 
-  const vec3 diffuse =
-      reflectedLight.directDiffuse + reflectedLight.indirectDiffuse;
-  const vec3 specular =
+  vec3 diffuse = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse;
+  vec3 specular =
       reflectedLight.directSpecular + reflectedLight.indirectSpecular;
 
 #ifdef DEBUG_DIFFUSE
@@ -631,6 +630,15 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   color += (1.0 / 255.0) * ditherValue;
 
   color = LinearToGamma(color);
+
+  // vignette
+  {
+    vec2 uv = fragCoord.xy / iResolution.xy;
+    uv *= 1.0 - uv.yx;
+    float vignette = uv.x * uv.y * 20.0;
+    vignette = pow(vignette, 0.2);
+    color *= vec3(vignette);
+  }
 
   fragColor = vec4(color, 1.0);
 }
