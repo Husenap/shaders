@@ -12,7 +12,10 @@ My shaders are fully compatible and can be copy-pasted into shadertoy.
 ## Screenshots
 
 ### Surrounded
-![Surrounded](docs/assets/images/surrounded.png)
+![](docs/assets/images/surrounded.png)
 
-#### Hearts
-![Hearts](docs/assets/images/hearts.png)
+### Hearts
+![](docs/assets/images/hearts.png)
+
+### Ribbed
+![](docs/assets/images/ribbed.png)
