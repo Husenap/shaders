@@ -362,7 +362,7 @@ Material GetMaterial(in vec3 position, in vec3 localPosition, in vec3 normal,
   switch (id) {
   case IdRed:
     material.albedo = RedAlbedo.rgb;
-    material.roughness = 0.6;
+    material.roughness = 0.55;
     material.metallic = 0.0;
     break;
   case IdGreen:
@@ -435,8 +435,8 @@ Ray GetRay(in vec2 uv) {
   vec3 lookAtPosition = iCameraTarget;
   vec3 cameraPosition = iCameraOrigin;
 #else
-  vec3 lookAtPosition = vec3(101.0, 1.0, 0.0);
-  vec3 cameraPosition = vec3(101.0, CameraPosition.yx);
+  vec3 lookAtPosition = vec3(11.0, 1.0, 0.0);
+  vec3 cameraPosition = vec3(11.0, CameraPosition.yx);
 #endif
 
   vec3 forward = normalize(lookAtPosition - cameraPosition);
