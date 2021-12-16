@@ -12,4 +12,4 @@ My shaders are fully compatible and can be copy-pasted into shadertoy.
 ## Screenshots
 
 #### surrounded
-![surrounded](/screenshots/surrounded.png)
+![surrounded](docs/assets/images/surrounded.png)

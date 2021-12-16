@@ -1,0 +1,20 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+.page-header{
+  background-image: linear-gradient(135deg, #993961, #97785d);
+}
+
+.project-name {
+  display: inline;
+  background: linear-gradient(135deg, #FF5FA2, #FCC89B);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.main-content h1, .main-content h2, .main-content h3, .main-content h4, .main-content h5, .main-content h6 {
+    color: #FF5FA2;
+}
