@@ -567,7 +567,6 @@ vec3 GetColor(in vec2 uv) {
       vec3 L = PointLights[i].position - geometry.position;
       float shadow = CalcShadow(position + normal * ShadowBias *
                                                hash33(geometry.position).x,
-
                                 normalize(L), length(L));
 
       directLight.color *= shadow;
