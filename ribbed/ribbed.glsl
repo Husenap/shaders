@@ -29,6 +29,8 @@ const float RayMarchingMaxBounces = 2.0;
 const float AOMaxSteps = 4.0;
 const float AOSampleLength = 1.0 / 7.0;
 
+const int ShadowSteps = 32;
+
 const int IdRed = 0;
 const int IdGreen = 1;
 const int IdBrown = 2;
@@ -40,6 +42,7 @@ const float PI = 3.1415926535;
 const float DegToRad = PI / 180.0;
 
 #define TIME (iTime)
+#define ZERO (min(iFrame, 0))
 
 //======================================================
 // DEBUG
@@ -104,6 +107,12 @@ float saturate(const in float x) { return clamp(x, 0.0, 1.0); }
 float map(const in float value, const in float low1, const in float high1,
           const in float low2, const in float high2) {
   return low2 + (value - low1) * (high2 - low2) / (high1 - low1);
+}
+vec3 hash33(vec3 p) {
+  p = vec3(dot(p, vec3(127.1, 311.7, 74.7)), dot(p, vec3(269.5, 183.3, 246.1)),
+           dot(p, vec3(113.5, 271.9, 124.6)));
+
+  return fract(sin(p) * 43758.5453123);
 }
 
 //======================================================
@@ -359,24 +368,27 @@ Material GetMaterial(in vec3 position, in vec3 localPosition, in vec3 normal,
   material.roughness = 0.0;
   material.metallic = 0.0;
 
+  float micro = hash33(localPosition).x * 0.05;
+
   switch (id) {
   case IdRed:
     material.albedo = RedAlbedo.rgb;
-    material.roughness = 0.55;
+    material.roughness = 0.55 - micro * 4.0;
     material.metallic = 0.0;
     break;
   case IdGreen:
     material.albedo = GreenAlbedo.rgb;
-    material.roughness = 0.15;
+    material.roughness = 0.15 - micro;
     material.metallic = 0.0;
     break;
   case IdBrown:
     material.albedo = BrownAlbedo.rgb;
-    material.roughness = 0.05;
+    material.roughness = 0.05 - micro;
     material.metallic = 1.0;
     break;
   }
 
+  material.roughness = saturate(material.roughness);
   material.albedo = max(GammaToLinear(material.albedo), 0.01);
   return material;
 }
@@ -427,6 +439,32 @@ float CalcAO(in vec3 position, in vec3 normal) {
   return max(1.0 - occlusion, 0.0);
 }
 
+float CalcShadow(in vec3 ro, in vec3 rd, in float maxT) {
+  float res = 1.0;
+  float t = 0.01;
+  float ph = 1e10;
+
+  for (int i = ZERO; i < ShadowSteps; ++i) {
+    float h = GetSceneData(rd * t + ro).depth;
+
+    if (h < RayMarchingSurfaceDistance) {
+      return 0.0;
+    }
+
+    float y = h * h / (2. * ph);
+    float d = sqrt(h * h - y * y);
+    res = min(res, 5. * d / max(0., t - y));
+    ph = h;
+
+    t += h * 0.95;
+
+    if (res < RayMarchingSurfaceDistance || t >= maxT)
+      break;
+  }
+
+  return saturate(res);
+}
+
 //======================================================
 // Camera
 //======================================================
@@ -468,7 +506,7 @@ vec3 GetSkyColor(in vec3 direction) {
   float y = max(direction.y, -0.11);
   vec3 skyColor = SkyColor.rgb - 0.7 * y;
   return mix(skyColor.rgb, GroundColor.rgb, exp(-10.0 * y)) +
-         sun * SunColor.rgb;
+         sun * SunColor.rgb * SunColor.a;
 }
 
 vec3 GetColor(in vec2 uv) {
@@ -490,7 +528,7 @@ vec3 GetColor(in vec2 uv) {
 #endif
 
     if (hit.depth > RayMarchingMaxDistance) {
-      result += carry * GetSkyColor(ray.direction);
+      result += carry * GetSkyColor(ray.direction + vec3(0.0, 0.2, 0.0));
       break;
     }
 
@@ -528,6 +566,9 @@ vec3 GetColor(in vec2 uv) {
       GetPointDirectLightIrradiance(PointLights[i], geometry.position,
                                     directLight);
       if (directLight.visible) {
+        vec3 L = PointLights[i].position - geometry.position;
+        float shadow = CalcShadow(position, normalize(L), length(L));
+        directLight.color *= shadow;
         RE_Direct(directLight, geometry, material, reflectedLight);
       }
     }
@@ -618,7 +659,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     vec2 uv = fragCoord.xy / iResolution.xy;
     uv *= 1.0 - uv.yx;
     float vignette = uv.x * uv.y * 20.0;
-    vignette = pow(vignette, 0.2);
+    vignette = pow(vignette, 0.15);
     color *= saturate(vignette);
   }
 

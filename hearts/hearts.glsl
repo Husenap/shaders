@@ -569,8 +569,8 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     vec2 uv = fragCoord.xy / iResolution.xy;
     uv *= 1.0 - uv.yx;
     float vignette = uv.x * uv.y * 20.0;
-    vignette = pow(vignette, 0.2);
-    color *= vec3(saturate(vignette));
+    vignette = pow(vignette, 0.15);
+    color *= saturate(vignette);
   }
 
   fragColor = vec4(color, 1.0);
